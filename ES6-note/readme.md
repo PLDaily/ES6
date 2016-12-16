@@ -243,3 +243,331 @@ for(let [index, elem] of ['a', 'b'].entries()) {
 	console.log(index, elem);//0 'a'; 1 'b';
 }
 ```
+
+## 对象的扩展
+
+### Object.is
+用于判断比较俩值是否完全相等
+
+```javascript
+console.log(NaN === NaN);//false
+console.log(Object.is(NaN, NaN));//true
+```
+
+### Object.assign
+相当于jquery中的extend
+```javascript
+console.log(Object.assign({"a": 1, "b": 2}, {"b": 3, "c": 3}));//{"a": 1, "b": 3, "c": 3}
+```
+
+### __proto__、Object.setPrototypeOf与Object.getPrototypeOf
+```javascript
+function abc() {
+	this.name = "pcd";
+}
+abc.prototype.sex = "man";
+var person = {};
+person.__proto__ = abc.prototype;
+//Object.setPrototypeOf(person, abc.prototype);
+abc.call(person);
+console.log(person.name);//pcd
+console.log(person.sex);//man
+console.log(Object.getPrototypeOf(person));//abc.prototype
+```
+
+### 增强对象的写法
+```javascript
+var sex = "man";
+var Person = {
+	name: "pcd",
+	//相当于sex: sex
+	sex,
+	//相当于abc: function() {console.log("aaa");}
+	abc() {
+		console.log("aaa");
+	}
+}
+```
+
+```javascript
+//ES5
+function abc() {
+	var a = 1;
+	var b = 2;
+	return {
+		a: a,
+		b: b
+	}
+}
+//ES6
+function abc() {
+	var a = 1;
+	var b = 2;
+	return {
+		a,
+		b
+	}
+}
+```
+
+### 属性名表达式
+```javascript
+var lastWorld = "lastword";
+var index = 1;
+var abc = {
+	"firstword": "Hello",
+	[lastWorld]: "World",
+	[lastWorld + index]: "World1"
+}
+console.log(abc);//{firstword: "Hello", lastword: "World", lastword1: "World1"}
+```
+
+### symbol
+symbol代表一种数据类型，通过Symbol函数生成
+```javascript
+var mySymbol = Symbol();
+var yourSymbol = Symbol();
+console.log(typeof mySymbol);//symbol
+console.log(mySymbol == yourSymbol);//false
+```
+通过symbol定义属性名
+```javascript
+let specialMethod = Symbol();
+let obj = {
+	[specialMethod]: function(arg) {
+		//...
+	} 
+}
+```
+
+### Proxy
+相当于设置了一个拦截函数
+```javascript
+var person = {
+	"name": "pcd"
+}
+
+var proxy = new Proxy(person, {
+	get: function(target, property) {
+		if(property in target) {
+			return target[property];
+		}else {
+			return "未找到该属性";
+		}
+	}
+})
+
+console.log(proxy.name);
+console.log(proxy.age);
+```
+
+## 函数的扩展
+
+### 默认参数值
+```javascript
+function Point(x = 10, y = 10) {
+	this.x = x;
+	this.y = y
+}
+var point = new Point(1);
+console.log(point.x);//1
+console.log(point.y);//10
+```
+
+### rest参数...
+用于获取函数多于的参数
+```javascript
+function add(...value) {
+	console.log(value);
+}
+add(1, 2, 3);//[1 ,2, 3]
+```
+
+### 扩展运算符
+```javascript
+console.log(...[1, 2, 3]);//1, 2, 3
+function add(x, y) {
+	return x + y;
+}
+console.log(add(...[1, 2]));//3
+var a = [1];
+var b = [1, ...a];
+console.log(b);//[1, 1]
+```
+
+### 箭头函数
+```javascript
+var f = function() {
+	return 1;
+}
+//等价于
+var f = () => 5;
+```
+
+```javascript
+var f = function(v) {
+	return v;
+}
+//等价于
+
+var f = (v) => v;
+```
+```javascript
+var f = function(v) {
+	return {
+		v
+	};
+}
+//等价于
+
+var f = (v) => ({v});
+```
+
+```javascript
+var Person = function() {
+	this.name = 'pcd';
+	this.hello = () => {
+		console.log(this.name);//this在定义是已经被锁死
+	}
+}
+
+var bb = new Person();
+bb.hello.bind({"name": "pcc"});
+bb.hello();//pcd
+```
+
+## set与map数据结构
+
+
+### set
+Set.prototype.constructor: 构造函数，默认就是Set函数
+Set.prototype.size: 返回Set的成员总数
+add(value): 添加某个值
+delete(value): 删除某个值
+has(value): Set成员中是否含有该值，返回布尔值
+clear(): 清空所有成员
+Set成员中不含相同重复的值
+
+基本用法
+```javascript
+var item = new Set([1, 2, 3, 4, 4, 5, 5, 5]);
+console.log(item);//Set {1, 2, 3, 4, 5}
+console.log(item.size);//5
+item.add(1);
+item.add(6);
+item.delete(5);
+console.log(item);//Set {1, 2, 3, 4, 6}
+console.log(item.has(6));//true
+console.log(item.has(5));//false
+```
+
+转化为数组
+```javascript
+var item = new Set([1, 2, 3, 4, 4, 5, 5, 5]);
+console.log(item);//Set {1, 2, 3, 4, 5}
+var array = Array.from(item);
+console.log(array);//[1, 2, 3, 4, 5]
+```
+
+### Map
+Map与Set的区别：Map需要使用字符串为键值
+size: 返回Set的成员总数
+add(value): 添加某个值
+delete(value): 删除某个值
+has(value): Set成员中是否含有该值，返回布尔值
+clear(): 清空所有成员
+
+基本用法
+```javascript
+var m = new Map();
+
+m.set('edition', 6);
+m.set(111, "aaa");
+var abc = () => console.log(1);
+m.set(abc, "function");
+console.log(m.size);//3
+console.log(m.get(111));//aaa
+console.log(m.has("edition"));//true
+```
+
+历遍
+keys(): 返回键名历遍
+values(): 返回键值历遍
+entries(): 返回所有成员的历遍
+forEach(): 逐个历遍
+
+```javascript
+var map = new Map();
+map.set('edition', 6);
+map.set(111, "aaa");
+var abc = () => console.log(1);
+map.set(abc, "function");
+for(let key of map.keys()) {
+	console.log(key);
+}
+
+for(let value of map.values()) {
+	console.log(value);
+}
+
+for(let [key, value] of map.entries()) {
+	console.log(key + "=" + value);
+}
+
+map.forEach(function(value, key, map) {
+	console.log(key + "--" + value);
+})
+
+var abc = {
+	aaa: function(key, value) {
+		console.log(key + "---" + value);
+	}
+}
+
+//forEach第二个参数用来绑定this
+map.forEach(function(value, key, map) {
+	this.aaa(key, value);
+}, abc)
+```
+
+### WeakMap
+
+只接受对象为键名
+``` javascript
+var map = new WeakMap();
+var ele = document.getElementById('div1');
+map.set(ele, "Original");
+//...
+console.log(map.get(ele));//Original
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
