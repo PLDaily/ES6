@@ -550,3 +550,169 @@ map.set(ele, "Original");
 //...
 console.log(map.get(ele));//Original
 ```
+
+## Iterator与for...of
+
+### Iterator(遍历器)
+部署next方法的对象，就具备了遍历器的功能(即能使用for...of)
+```javascript
+function makeIterator(array) {
+	var nextIndex = 0;
+	return {
+		next: function() {
+			return nextIndex < array.length ? 
+			{value: array[nextIndex++], done: false} :
+			{value: undefined, done: true}
+		}
+	}
+}
+
+var it = makeIterator(['a', 'b']);
+console.log(it.next().value);//a
+console.log(it.next().value);//b
+console.log(it.next().value);//undefined
+```
+
+### for..of与for...in
+for..of 能够历遍数组、类似数组(arguments对象、DOM NodeList对象)、Set和Map结构的对象。（示例省略）
+对于普通对象使用for...of会报错，但还是可以使用for...in进行键名遍历
+```javascript
+var es6 = {
+	edition: 6,
+	committee: "TC39",
+	standard: "ECMA-262"
+}
+
+for(let e of es6) {
+	console.log(e);
+}//报错
+```
+
+## Promise对象
+应用场景：有时我们会将一个异步请求封装在一个函数中，因为可能请求的过程(主体)的代码都是一样的，但请求成功后对返回的数据的操作却各有不同。这时我们便可以使用Promise对象。
+### Promise使用介绍
+```javascript
+var getJSON = function(url) {
+	var promise = new Promise(function(resolve, reject) {
+		var client = new XMLHttpRequest();
+		client.open("GET", url);
+		client.onreadystatechange = handler;
+		client.responseType = 'json';
+		client.setRequestHeader("Accept", "application/json");
+		client.send();
+
+		function handler() {
+			if(this.readState === this.DONE) {
+				if(this.status == 200) {
+					resolve(this.response);
+				}else {
+					reject(this);
+				}
+			}
+		}
+	})
+}
+getJSON('/posts.json').then(function(json) {
+	//deal json
+	return json.post;//返回json中的一部分传给下一个then
+}).then(function(post) {
+	//deal json.post
+}).catch(function(error) {
+	console.log(error);//错误处理
+})
+```
+
+### Promise.resolve
+将现有对象转化为Promise对象
+```javascript
+var jsPromise = Promise.resolve($.ajax('./whatever.json'));
+```
+
+
+### async使用介绍
+```javascript
+function timeout(ms) {
+	return new Promise((resolve) => {
+		setTimeout(resolve, ms);
+	})
+}
+
+async function asyncValue(value) {
+	await timeout(1000);//等待timeout执行结束之后再执行return
+	return value;
+}
+console.log(asyncValue(100));//1s之后显示100
+```
+
+
+
+## Class和Module
+
+### class
+```javascript
+class Animal {
+	constructor(word) {
+		this.word = word;
+	}
+	speak() {
+		console.log(this.word);
+	}
+}
+
+var cat = new Animal("喵");
+cat.speak();
+```
+
+### 继承
+```javascript
+class Personal{
+	constructor(name, sex) {
+		this.name = name;
+		this.sex = sex;
+	}
+	say() {
+		console.log(`我叫${this.name}，是${this.sex}`);
+	}
+}
+
+//var pcd = new Personal('pcs', 'man');
+//pcd.say();
+
+
+class Employee extends Personal {
+	constructor(name, sex, age) {
+		super(name, sex);
+		this.age = age;
+	}
+}
+
+
+var pcd = new Employee('pcd', 'man', '21');
+pcd.say();//我叫pcd，是man
+```
+
+### export与module
+```javascript
+//profile.js
+export var firstName = "David";
+export var lastName = "Belle";
+export function abc() {
+	return 11;
+}
+//main.js
+import {firstName, lastName, abc} from './profile'
+console.log(firstName);//David
+console.log(lastName);//Belle
+console.log(abc());//11
+```
+
+```javascript
+//profile.js
+module.exports =  function abc() {
+	return 11;
+}
+
+//main.js
+var profile = require('./profile');
+console.log(profile());//11
+```
