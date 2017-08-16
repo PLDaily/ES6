@@ -6,22 +6,33 @@
 
 ### webpack.config.js的配置
 ``` bash
-module.exports = {
-  entry: './main',//入口文件
+const webpack = require('webpack');
+const path = require('path')
+
+
+function resolve (dir) {
+  return path.join(__dirname, dir)
+}
+
+const config = {
+  entry: './main.js',//入口文件
   output: {
+    path: resolve('/'),
+    publicPath: '/',
     filename: 'bundle.js'//输出文件
   },
   module: {
-    loaders: [{
-      test: /\.js$/,//正则匹配文件，对其进行解析
-      exclude: /node_modules/,//不对node_modules里的js文件进行解析
-      loader: 'babel',//使用babel加载器
-      query: {
-        presets: ['es2015']//解析成ES5的形式
+    rules: [
+      {
+        test: /\.js$/,//正则匹配文件，对其进e行解析
+        exclude: /(node_modules|bower_components)/,//不对node_modules里的js文件进行解析
+        use: ['babel-loader'],//使用babel加载器
+        // include: [resolve('src')] //包含的文件
       }
-    }]
+    ]
   }
 }
+module.exports = config;
 
 ```
 
@@ -37,15 +48,23 @@ module.exports = {
   </body>
 </html>
 ```
-
+### .babelrc
+```bash 
+{
+  "presets": [
+    "env"
+  ],
+  "plugins": ["transform-runtime"],//用于Promise、Set、Map 等新增对象，Object.assign、Object.entries 等全局对象上的新增方法都不会转码
+}
+```
 ### package.json
 ``` bash
 {
   "name": "ES6_environment",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "index.js",
-  "scripts": {//可以使用npm run的快捷方式
+  "scripts": {
     "start": "live-server --port=3004",
     "watch": "webpack -w"
   },
@@ -53,11 +72,12 @@ module.exports = {
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "babel-core": "^6.3.17",
-    "babel-loader": "^6.2.0",
-    "babel-preset-es2015": "^6.3.13",
-    "live-server": "^0.9.0",
-    "webpack": "^1.12.9"
+    "babel-core": "^6.25.0",
+    "babel-loader": "^7.1.1",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-preset-env": "^1.6.0",
+    "live-server": "^1.2.0",
+    "webpack": "^3.5.4"
   }
 }
 ```
